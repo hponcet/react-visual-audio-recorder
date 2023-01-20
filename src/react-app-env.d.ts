@@ -1,11 +1,11 @@
 /// <reference types="react-scripts" />
 
 interface ReactAudioRecorderBlobObject {
-  blob: Blob;
+  blob: Blob | null;
   startTime: number;
   stopTime: number;
   options: MediaRecorderOptions;
-  blobURL: string;
+  blobURL: string | null;
 }
 
 interface ReactAudioRecorderSoundOptions {
@@ -24,25 +24,25 @@ interface ReactAudioRecorderRefHandler {
 }
 
 interface ReactAudioRecorderProps {
-  /** Width of the canvas. */
+  /**
+   * Width of the canvas.
+   * @default 640
+   */
   width?: number;
 
-  /** Height of the canvas. */
+  /**
+   * Height of the canvas.
+   * @default 100
+   */
   height?: number;
 
   /**
-   * Called when the recording is paused.
+   * Called when the recording is stopped or paused. All chunks
+   * are sended as a blob.
    * @param blobObject
    * @returns
    */
-  onPause?: (blobObject: ReactAudioRecorderBlobObject) => void;
-
-  /**
-   * Called when the recording is stopped.
-   * @param blobObject
-   * @returns
-   */
-  onStop?: (blobObject: ReactAudioRecorderBlobObject) => void;
+  onChange?: (blobObject: ReactAudioRecorderBlobObject) => void;
 
   /**
    * Called when the recording is started
@@ -51,7 +51,8 @@ interface ReactAudioRecorderProps {
   onStart?: () => void;
 
   /**
-   * Called during the recording.
+   * Called during the recording. Sending all chunks as blob
+   * during the recording.
    * @param blob
    * @returns
    */
@@ -66,28 +67,53 @@ interface ReactAudioRecorderProps {
 
   /**
    * Quality of the recording in bytes/second.
-   * default value: 128000
+   * @default 128000
    */
   audioBitsPerSecond?: any;
 
-  echoCancellation?: any;
-  autoGainControl?: any;
-  noiseSuppression?: any;
+  /**
+   * Reduce echo digitally
+   * @default true
+   */
+  echoCancellation?: boolean;
+
+  /**
+   * Reduce echo digitally
+   * @default true
+   */
+  autoGainControl?: boolean;
+
+  /**
+   * Suppresses background noise
+   * @default true
+   */
+  noiseSuppression?: boolean;
 
   /**
    * Sine wave spacing.
    * It should be a base 8 representation.
-   * default: 512
+   * @default 512
    */
   frequencySize?: number;
 
-  /** MimeType of the converting blob */
+  /**
+   * MimeType of the converting blob
+   * @default "audio/ogg; codecs=vorbis"
+   * @external https://developer.mozilla.org/en-US/docs/Web/Media/Formats/codecs_parameter
+   * @external https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#audio_and_video_types
+   */
   mimeType?: any;
 
-  /** backgroundColor of the curve */
+  /**
+   * BackgroundColor of the curve.
+   * @default "rgba(255, 255, 255, 0.5)"
+   */
   backgroundColor?: string;
 
-  /** color of the curve */
+  /**
+   * Color of the curve.
+   * @default #000000
+   */
   strokeColor?: string;
 
   /** style of the canvas */

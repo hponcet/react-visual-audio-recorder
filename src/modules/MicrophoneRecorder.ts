@@ -11,8 +11,7 @@ let startTime: number;
 let stream: MediaStream;
 let mediaOptions: Options;
 let onStartCallback: (() => void) | void;
-let onStopCallback: ((blobObject: ReactAudioRecorderBlobObject) => void) | void;
-let onPauseCallback: ((blobObject: ReactAudioRecorderBlobObject) => void) | void;
+let onChangeCallback: ((blobObject: ReactAudioRecorderBlobObject) => void) | void;
 let onDataCallback: ((blob: Blob) => void) | void;
 let constraints: {
   audio: {
@@ -54,8 +53,7 @@ function olderNavigatorCompat() {
 export class MicrophoneRecorder {
   constructor(
     onStart: typeof onStartCallback,
-    onStop: typeof onStopCallback,
-    onPause: typeof onPauseCallback,
+    onChange: typeof onChangeCallback,
     onData: typeof onDataCallback,
     options: Options,
     soundOptions: ReactAudioRecorderSoundOptions
@@ -63,8 +61,7 @@ export class MicrophoneRecorder {
     const { echoCancellation, autoGainControl, noiseSuppression, channelCount } = soundOptions;
 
     onStartCallback = onStart;
-    onStopCallback = onStop;
-    onPauseCallback = onPause;
+    onChangeCallback = onChange;
     onDataCallback = onData;
     mediaOptions = options;
 
@@ -82,22 +79,13 @@ export class MicrophoneRecorder {
   }
 
   mediaRecorder: MediaRecorder | null = null;
-  recordingState: "stopped" | "paused" | "recording" = "stopped";
 
-  pauseRecording = () => {
-    this.recordingState = "paused";
-    audioCtx.suspend();
-    this.mediaRecorder?.pause();
-  };
-
-  resumeRecording = () => {
-    this.recordingState = "recording";
-    audioCtx.resume();
-    this.mediaRecorder?.resume();
-  };
+  actionsOnStop: (() => void) | null = null;
 
   startRecording = () => {
     startTime = Date.now();
+
+    this.actionsOnStop = this.onStop;
 
     if (this.mediaRecorder) {
       if (audioCtx && audioCtx.state === "suspended") {
@@ -113,9 +101,7 @@ export class MicrophoneRecorder {
         this.mediaRecorder.start(10);
         const source = audioCtx.createMediaStreamSource(stream);
         source.connect(analyser);
-        if (onStartCallback) {
-          onStartCallback();
-        }
+        if (onStartCallback) onStartCallback();
       }
     } else if (navigator.mediaDevices) {
       navigator.mediaDevices.getUserMedia(constraints).then((mediaStrem) => {
@@ -131,31 +117,18 @@ export class MicrophoneRecorder {
           onStartCallback();
         }
 
-        this.mediaRecorder.onstart = () => {
-          this.recordingState = "recording";
-        };
-
         this.mediaRecorder.onstop = (e) => {
-          console.log("onstop");
-          this.recordingState = "stopped";
-          this.onStop();
+          this.actionsOnStop?.();
         };
 
         this.mediaRecorder.onpause = () => {
-          this.recordingState = "paused";
           this.onPause();
-        };
-
-        this.mediaRecorder.onresume = () => {
-          this.recordingState = "recording";
         };
 
         this.mediaRecorder.ondataavailable = (event) => {
           chunks.push(event.data);
 
-          if (onDataCallback) {
-            onDataCallback(event.data);
-          }
+          if (onDataCallback) onDataCallback(event.data);
         };
 
         audioCtx = AudioContext.getAudioContext();
@@ -184,6 +157,21 @@ export class MicrophoneRecorder {
     }
   }
 
+  pauseRecording = () => {
+    audioCtx?.suspend();
+    this.mediaRecorder?.pause();
+  };
+
+  resumeRecording = () => {
+    audioCtx?.resume();
+    this.mediaRecorder?.resume();
+  };
+
+  resetRecording = () => {
+    this.actionsOnStop = this.onReset;
+    this.stopRecording();
+  };
+
   onPause() {
     const blob = new Blob(chunks, { type: mediaOptions.mimeType });
 
@@ -195,9 +183,21 @@ export class MicrophoneRecorder {
       blobURL: window.URL.createObjectURL(blob),
     };
 
-    if (onPauseCallback) {
-      onPauseCallback(blobObject);
-    }
+    if (onChangeCallback) onChangeCallback(blobObject);
+  }
+
+  onReset() {
+    chunks = [];
+
+    const blobObject = {
+      blob: null,
+      startTime,
+      stopTime: Date.now(),
+      options: mediaOptions,
+      blobURL: null,
+    };
+
+    if (onChangeCallback) onChangeCallback(blobObject);
   }
 
   onStop() {
@@ -212,8 +212,6 @@ export class MicrophoneRecorder {
       blobURL: window.URL.createObjectURL(blob),
     };
 
-    if (onStopCallback) {
-      onStopCallback(blobObject);
-    }
+    if (onChangeCallback) onChangeCallback(blobObject);
   }
 }

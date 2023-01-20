@@ -15,17 +15,10 @@ export default function App() {
     else if (status === "recording") audioRecorder.current?.pause();
   }
 
-  function addRecord(blobObject: ReactAudioRecorderBlobObject) {
+  function onChange(blobObject: ReactAudioRecorderBlobObject) {
     if (!blobObject) return;
-    setRecord((record) => [...record, blobObject.blob]);
-    console.log(blobObject.blob.type);
-    setMimeType(blobObject.blob.type);
-  }
-
-  function onPause(blobObject: ReactAudioRecorderBlobObject) {
-    if (!blobObject) return;
-    setRecord([blobObject.blob]);
-    setMimeType(blobObject.blob.type);
+    setRecord(blobObject.blob ? [blobObject.blob] : []);
+    setMimeType(blobObject.blob?.type || "audio/ogg; codecs=opus");
   }
 
   function reset() {
@@ -47,26 +40,20 @@ export default function App() {
     blobToBase64(blob).then(setFile);
   }, [mimeType, record]);
 
-  console.log(status);
-
   return (
     <div>
-      <button onClick={toggleRecording}>
-        {status === "stopped" ? "Start recording" : status === "pause" ? "Resume" : "Pause"}
-      </button>
-      <button onClick={() => reset()} disabled={record.length === 0}>
-        Reset
-      </button>
       <ReactAudioRecorder
-        ref={(ref) => {
-          console.log(ref);
-          audioRecorder.current = ref;
-        }}
-        onStop={addRecord}
-        onPause={onPause}
+        ref={audioRecorder}
+        onChange={onChange}
         mimeType="audio/ogg; codecs=opus"
         handleStatus={setStatus}
       />
+      <button onClick={toggleRecording}>
+        {status === "stopped" ? "Start recording" : status === "pause" ? "Resume" : "Pause"}
+      </button>
+      <button onClick={() => reset()} disabled={record.length === 0 || status === "recording"}>
+        Reset
+      </button>
       {["pause", "stopped"].includes(status) ? <audio src={file || ""} controls={true} playsInline></audio> : null}
     </div>
   );

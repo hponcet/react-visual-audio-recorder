@@ -1,21 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { Visualizer, MicrophoneRecorder } from "./libs";
+import { Visualizer, MicrophoneRecorder } from "./modules";
 
 const ReactAudioRecorder = forwardRef<ReactAudioRecorderRefHandler, ReactAudioRecorderProps>((props, ref) => {
   const {
     width = 640,
     height = 100,
-    onStop,
     onStart,
     onData,
-    onPause,
+    onChange,
     handleStatus,
     audioBitsPerSecond = 128000,
-    echoCancellation = false,
-    autoGainControl = false,
-    noiseSuppression = false,
-    mimeType = "audio/webm;codecs=opus",
+    echoCancellation = true,
+    autoGainControl = true,
+    noiseSuppression = true,
+    mimeType = "audio/ogg; codecs=vorbis",
     backgroundColor = "rgba(255, 255, 255, 0.5)",
     strokeColor = "#000000",
     className = "visualizer",
@@ -29,25 +28,7 @@ const ReactAudioRecorder = forwardRef<ReactAudioRecorderRefHandler, ReactAudioRe
 
   const visualizerRef = useRef<HTMLCanvasElement | null>(null);
 
-  useEffect(() => {
-    if (microphoneRecorder) {
-      if (record && canvasCtx) {
-        microphoneRecorder.startRecording();
-      } else {
-        microphoneRecorder.stopRecording(onStop);
-        canvasCtx?.clearRect(0, 0, width, height);
-      }
-    }
-  }, [record, canvasCtx, onStop, width, height]);
-
-  useEffect(() => {
-    let animationFrame: number;
-    if (record) animationFrame = Visualizer(canvasCtx, canvas, width, height, backgroundColor, strokeColor);
-    return () => {
-      if (!record) cancelAnimationFrame(animationFrame);
-    };
-  }, [record, canvasCtx, canvas, width, height, backgroundColor, strokeColor]);
-
+  /** Modules initialisation */
   useEffect(() => {
     if (visualizerRef.current) {
       const visualizer = visualizerRef.current;
@@ -67,37 +48,58 @@ const ReactAudioRecorder = forwardRef<ReactAudioRecorderRefHandler, ReactAudioRe
 
       setCanvas(canvas);
       setCanvasCtx(canvasCtx);
-      setMicrophoneRecorder(new MicrophoneRecorder(onStart, onStop, onPause, onData, options, soundOptions));
+      setMicrophoneRecorder(new MicrophoneRecorder(onStart, onChange, onData, options, soundOptions));
     }
   }, []);
+
+  useEffect(() => {
+    let animationFrame: number;
+    if (record) animationFrame = Visualizer(canvasCtx, canvas, width, height, backgroundColor, strokeColor);
+    return () => {
+      if (!record) cancelAnimationFrame(animationFrame);
+    };
+  }, [record, canvasCtx, canvas, width, height, backgroundColor, strokeColor]);
 
   useEffect(() => {
     if (handleStatus) handleStatus(pause && record ? "pause" : !pause && record ? "recording" : "stopped");
   }, [pause, record]);
 
+  function startRecording() {
+    setRecord(true);
+    microphoneRecorder?.startRecording();
+  }
+
+  function stopRecording() {
+    setRecord(false);
+    microphoneRecorder?.stopRecording();
+  }
+
+  function resetRecording() {
+    setRecord(false);
+    setPause(false);
+    microphoneRecorder?.resetRecording();
+  }
+
+  function pauseRecording() {
+    setPause(true);
+    if (microphoneRecorder && record) microphoneRecorder.pauseRecording();
+  }
+
+  function resumeRecording() {
+    setPause(false);
+    if (microphoneRecorder && record) microphoneRecorder.resumeRecording();
+  }
+
   useImperativeHandle(
     ref,
     () => ({
-      start: () => setRecord(true),
-      stop: () => setRecord(false),
-      reset: () => {
-        setRecord(false);
-        setPause(false);
-      },
-      pause: () => {
-        setPause(true);
-        if (microphoneRecorder && record) {
-          if (microphoneRecorder.recordingState === "recording") microphoneRecorder.pauseRecording();
-        }
-      },
-      resume: () => {
-        setPause(false);
-        if (microphoneRecorder && record) {
-          if (microphoneRecorder.recordingState === "paused") microphoneRecorder.resumeRecording();
-        }
-      },
+      start: startRecording,
+      stop: stopRecording,
+      reset: resetRecording,
+      pause: pauseRecording,
+      resume: resumeRecording,
     }),
-    [microphoneRecorder, record]
+    [microphoneRecorder, record, canvasCtx]
   );
 
   return <canvas ref={visualizerRef} height={height} width={width} className={className} />;
