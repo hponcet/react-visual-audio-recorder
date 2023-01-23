@@ -1,19 +1,16 @@
-import AudioContext from "./AudioContext";
-
 let animationFrame: number;
 
 function Visualizer(
   canvasCtx: CanvasRenderingContext2D | null,
   canvas: HTMLCanvasElement | null,
+  analyser: AnalyserNode | void,
   width: number,
   height: number,
   backgroundColor: string,
   strokeColor: string,
   frequencySize: number | void
 ): number {
-  if (!canvasCtx || !canvas) return -1;
-
-  let analyser = AudioContext.getAnalyser();
+  if (!canvas || !analyser || !canvasCtx) return -1;
 
   analyser.fftSize = frequencySize || 512;
 
@@ -27,7 +24,11 @@ function Visualizer(
 
     animationFrame = requestAnimationFrame(draw);
 
-    analyser = AudioContext.getAnalyser();
+    if (!analyser) {
+      canvasCtx.clearRect(0, 0, width, height);
+      return -1;
+    }
+
     analyser.getByteTimeDomainData(dataArray);
 
     canvasCtx.fillStyle = backgroundColor;
