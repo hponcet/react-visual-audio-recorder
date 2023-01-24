@@ -14,6 +14,8 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
       onData,
       onChange,
       handleStatus,
+      mimeType: _mimeType,
+      ext: _ext,
       audioBitsPerSecond = 128000,
       echoCancellation = true,
       autoGainControl = true,
@@ -30,10 +32,11 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
     const visualizerRef = useRef<HTMLCanvasElement | null>(null);
 
     const { mimeType, ext } = useMemo(() => {
+      if (_mimeType || _ext) return { mimeType: _mimeType, ext: _ext };
       if (MediaRecorder.isTypeSupported("audio/mp4")) return { mimeType: "audio/mp4", ext: "mp4" };
       if (MediaRecorder.isTypeSupported("audio/webm")) return { mimeType: "audio/webm", ext: "webm" };
       throw new Error("Your browser does not support audio recording");
-    }, []);
+    }, [_mimeType, _ext]);
 
     const {
       stopRecording: onStopRecording,

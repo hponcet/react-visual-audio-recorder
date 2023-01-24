@@ -49,7 +49,7 @@ export interface ReactVisualAudioRecorderProps {
   audioBitsPerSecond?: any;
 
   /**
-   * Reduce echo digitally
+   * Reduces the echo of the recording.
    * @default true
    */
   echoCancellation?: boolean;
@@ -62,7 +62,7 @@ export interface ReactVisualAudioRecorderProps {
   channelCount?: number;
 
   /**
-   * Reduce echo digitally
+   * Control circuit in an amplifier or a chain of amplifiers.
    * @default true
    */
   autoGainControl?: boolean;
@@ -80,14 +80,22 @@ export interface ReactVisualAudioRecorderProps {
    */
   frequencySize?: number;
 
-  // /**
-  //  * MimeType of the converting blob
-  //  *
-  //  * @default "audio/ogg; codecs=vorbis"
-  //  * @external https://developer.mozilla.org/en-US/docs/Web/Media/Formats/codecs_parameter
-  //  * @external https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#audio_and_video_types
-  //  */
-  // mimeType?: "audio/ogg" | "audio/webm" | "audio/mp4" | "audio/wave" | "audio/wav" | "audio/x-wav" | "audio/x-pn-wav";
+  /**
+   * MimeType of the converting blob.
+   * "audio/ogg" | "audio/webm" | "audio/mp4" | "audio/wave" | "audio/wav"  ...
+   *
+   * @default Automatic
+   * @external https://developer.mozilla.org/en-US/docs/Web/Media/Formats/codecs_parameter
+   * @external https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#audio_and_video_types
+   */
+  mimeType?: string;
+
+  /**
+   * Extension for the return of the function getFileExtension in type ReactVisualAudioRecorderRefHandler.
+   * "webm" | "mp4" | "ogg" | "wave" | "wav" ...
+   * @default Automatic
+   */
+  ext?: string;
 
   /**
    * BackgroundColor of the curve.
@@ -143,7 +151,7 @@ export interface UseMicrophoneRecorderParams {
     | void;
   onChange: ((blobObject: ReactVisualAudioRecorderBlobObject) => void) | void;
   onData: ((blob: Blob) => void) | void;
-  options: { mimeType: string } & MediaRecorderOptions;
+  options: { mimeType: string | undefined } & MediaRecorderOptions;
   soundOptions?: ReactVisualAudioRecorderSoundOptions;
 }
 

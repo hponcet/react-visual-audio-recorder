@@ -15,10 +15,15 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+git@bitbucket.org:testwe_eu/react-audio-recorder.git"
+    "url": "git+https://github.com/hponcet/react-visual-audio-recorder.git"
   },
   "keywords": [],
   "author": "hugues.poncet@testwe.eu",
   "license": "ISC",
-  "description": ""
+  "bugs": {
+    "url": "https://github.com/hponcet/react-visual-audio-recorder/issues"
+  },
+  "homepage": "https://github.com/hponcet/react-visual-audio-recorder#readme",
+  "description": "React component for audio recording with canvas",
+  "dependencies": {}
 }

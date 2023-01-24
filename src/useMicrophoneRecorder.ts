@@ -51,11 +51,12 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
 
   let constraints = useMemo(
     () => ({
-      audio: soundOptions || {
+      audio: {
         echoCancellation: true,
         autoGainControl: true,
         noiseSuppression: true,
         channelCount: 2,
+        ...soundOptions,
       },
       video: false,
     }),
@@ -162,10 +163,10 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
 
           let mediaRecorderInstance: MediaRecorder;
 
-          if (MediaRecorder.isTypeSupported(options.mimeType)) {
+          if (options.mimeType && MediaRecorder.isTypeSupported(options.mimeType)) {
             mediaRecorderInstance = new MediaRecorder(mediaStream, options);
           } else {
-            mediaRecorderInstance = new MediaRecorder(mediaStream);
+            mediaRecorderInstance = new MediaRecorder(mediaStream, { ...options, mimeType: "" });
           }
 
           mediaRecorderInstance.addEventListener("dataavailable", onHandleChunks);
