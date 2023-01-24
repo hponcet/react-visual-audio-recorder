@@ -6,6 +6,7 @@ export type {
   UseMicrophoneRecorderParams,
   UseMicrophoneRecorderContext,
   ReactVisualAudioRecorderBlobObject,
+  ReactVisualAudioRecorderRefHandler,
 } from "./types";
 
 export { ReactVisualAudioRecorder, useMicrophoneRecorder };
