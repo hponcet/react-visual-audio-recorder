@@ -39,7 +39,7 @@ function olderNavigatorCompat() {
 }
 
 export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseMicrophoneRecorderContext {
-  const { onStart, onChange, onData, options, soundOptions } = params;
+  const { onStart, onStop: _onStop, onChange, onData, options, soundOptions } = params;
 
   const [mediaStream, setMediaStream] = useState<MediaStream | void>();
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | void>();
@@ -114,6 +114,7 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
       };
 
       if (onChange) onChange(blobObject);
+      if (_onStop) _onStop(blobObject);
     }
   }
 

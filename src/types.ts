@@ -14,18 +14,24 @@ export interface ReactVisualAudioRecorderProps {
   height?: number;
 
   /**
+   * Called when the recording is started
+   * @returns
+   */
+  onStart?: () => void;
+  /**
+   * Called when the recording is stopped. All chunks are sended as a blob.
+   * @param blobObject
+   * @returns
+   */
+  onStop?: (blobObject: ReactVisualAudioRecorderBlobObject) => void;
+
+  /**
    * Called when the recording is stopped or paused. All chunks
    * are sended as a blob.
    * @param blobObject
    * @returns
    */
   onChange?: (blobObject: ReactVisualAudioRecorderBlobObject) => void;
-
-  /**
-   * Called when the recording is started
-   * @returns
-   */
-  onStart?: () => void;
 
   /**
    * Called during the recording. Sending all chunks as blob
@@ -149,6 +155,7 @@ export interface UseMicrophoneRecorderParams {
         analyser: AnalyserNode
       ) => void)
     | void;
+  onStop: ((blobObject: ReactVisualAudioRecorderBlobObject) => void) | void;
   onChange: ((blobObject: ReactVisualAudioRecorderBlobObject) => void) | void;
   onData: ((blob: Blob) => void) | void;
   options: { mimeType: string | undefined } & MediaRecorderOptions;
