@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import ReactAudioRecorder from "../ReactAudioRecorder";
+import ReactVisualAudioRecorder from "../ReactVisualAudioRecorder";
 export default function App() {
     var _a;
     const [url, setUrl] = useState(null);
@@ -26,7 +26,7 @@ export default function App() {
     }
     return (React.createElement("div", { style: { display: "flex", flexDirection: "column" } },
         React.createElement("div", { style: { width: 300, height: 70 } },
-            React.createElement(ReactAudioRecorder, { ref: audioRecorder, width: 300, height: 70, onChange: onChange, handleStatus: setStatus })),
+            React.createElement(ReactVisualAudioRecorder, { ref: audioRecorder, width: 300, height: 70, onChange: onChange, handleStatus: setStatus })),
         React.createElement("div", null,
             React.createElement("button", { onClick: toggleRecording }, status === "stopped" ? "Start recording" : status === "pause" ? "Resume" : "Pause"),
             React.createElement("button", { onClick: () => reset(), disabled: !url || status === "recording" }, "Reset"),

@@ -1,6 +1,6 @@
 {
   "name": "react-visual-audio-recorder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "scripts": {
     "clean": "rm -rf dist",
@@ -15,14 +15,10 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hponcet/testwe-react-audio-recorder.git"
+    "url": "git+git@bitbucket.org:testwe_eu/react-audio-recorder.git"
   },
   "keywords": [],
   "author": "hugues.poncet@testwe.eu",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/hponcet/testwe-react-audio-recorder/issues"
-  },
-  "homepage": "https://github.com/hponcet/testwe-react-audio-recorder#readme",
   "description": ""
 }

@@ -1,4 +1,4 @@
-import ReactAudioRecorder from "./ReactAudioRecorder";
+import ReactVisualAudioRecorder from "./ReactVisualAudioRecorder";
 import { useMicrophoneRecorder } from "./useMicrophoneRecorder";
-export type { ReactAudioRecorderProps, UseMicrophoneRecorderParams, UseMicrophoneRecorderContext, ReactAudioRecorderBlobObject, } from "./types";
-export { ReactAudioRecorder, useMicrophoneRecorder };
+export type { ReactVisualAudioRecorderProps, UseMicrophoneRecorderParams, UseMicrophoneRecorderContext, ReactVisualAudioRecorderBlobObject, } from "./types";
+export { ReactVisualAudioRecorder, useMicrophoneRecorder };

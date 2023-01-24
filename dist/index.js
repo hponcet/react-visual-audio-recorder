@@ -1,3 +1,3 @@
-import ReactAudioRecorder from "./ReactAudioRecorder";
+import ReactVisualAudioRecorder from "./ReactVisualAudioRecorder";
 import { useMicrophoneRecorder } from "./useMicrophoneRecorder";
-export { ReactAudioRecorder, useMicrophoneRecorder };
+export { ReactVisualAudioRecorder, useMicrophoneRecorder };

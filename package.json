@@ -1,7 +1,7 @@
 {
-  "name": "@testwe/react-audio-recorder",
-  "version": "1.0.0",
-  "private": true,
+  "name": "react-visual-audio-recorder",
+  "version": "1.0.1",
+  "private": false,
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc && cp package.json README.md ./dist"
@@ -15,20 +15,10 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hponcet/testwe-react-audio-recorder.git"
+    "url": "git+git@bitbucket.org:testwe_eu/react-audio-recorder.git"
   },
   "keywords": [],
   "author": "hugues.poncet@testwe.eu",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/hponcet/testwe-react-audio-recorder/issues"
-  },
-  "homepage": "https://github.com/hponcet/testwe-react-audio-recorder#readme",
-  "description": "React component for audio recording with canvas",
-  "dependencies": {
-    "csstype": "^3.1.1",
-    "js-tokens": "^4.0.0",
-    "loose-envify": "^1.4.0",
-    "scheduler": "^0.23.0"
-  }
+  "description": ""
 }

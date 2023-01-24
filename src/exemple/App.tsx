@@ -1,12 +1,12 @@
 import React, { useRef, useState } from "react";
-import ReactAudioRecorder from "../ReactAudioRecorder";
-import type { ReactAudioRecorderRefHandler, ReactAudioRecorderBlobObject } from "../types";
+import ReactVisualAudioRecorder from "../ReactVisualAudioRecorder";
+import type { ReactVisualAudioRecorderRefHandler, ReactVisualAudioRecorderBlobObject } from "../types";
 
 export default function App() {
   const [url, setUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<"pause" | "recording" | "stopped">("stopped");
 
-  const audioRecorder = useRef<ReactAudioRecorderRefHandler | null>(null);
+  const audioRecorder = useRef<ReactVisualAudioRecorderRefHandler | null>(null);
 
   function toggleRecording() {
     if (status === "stopped") audioRecorder.current?.start();
@@ -14,7 +14,7 @@ export default function App() {
     else if (status === "recording") audioRecorder.current?.pause();
   }
 
-  function onChange(blobObject: ReactAudioRecorderBlobObject) {
+  function onChange(blobObject: ReactVisualAudioRecorderBlobObject) {
     if (!blobObject) return;
     setUrl(blobObject.blobURL);
   }
@@ -27,7 +27,13 @@ export default function App() {
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <div style={{ width: 300, height: 70 }}>
-        <ReactAudioRecorder ref={audioRecorder} width={300} height={70} onChange={onChange} handleStatus={setStatus} />
+        <ReactVisualAudioRecorder
+          ref={audioRecorder}
+          width={300}
+          height={70}
+          onChange={onChange}
+          handleStatus={setStatus}
+        />
       </div>
       <div>
         <button onClick={toggleRecording}>

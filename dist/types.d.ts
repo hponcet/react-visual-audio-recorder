@@ -1,5 +1,5 @@
 import { ForwardedRef } from "react";
-export interface ReactAudioRecorderProps {
+export interface ReactVisualAudioRecorderProps {
     /**
      * Width of the canvas.
      * @default 640
@@ -16,7 +16,7 @@ export interface ReactAudioRecorderProps {
      * @param blobObject
      * @returns
      */
-    onChange?: (blobObject: ReactAudioRecorderBlobObject) => void;
+    onChange?: (blobObject: ReactVisualAudioRecorderBlobObject) => void;
     /**
      * Called when the recording is started
      * @returns
@@ -80,22 +80,22 @@ export interface ReactAudioRecorderProps {
     /** style of the canvas */
     className?: string;
     /** Refs to the component function */
-    ref: ForwardedRef<ReactAudioRecorderRefHandler>;
+    ref: ForwardedRef<ReactVisualAudioRecorderRefHandler>;
 }
-export interface ReactAudioRecorderBlobObject {
+export interface ReactVisualAudioRecorderBlobObject {
     blob: Blob | null;
     startTime: number;
     stopTime: number;
     options: MediaRecorderOptions;
     blobURL: string | null;
 }
-export interface ReactAudioRecorderSoundOptions {
+export interface ReactVisualAudioRecorderSoundOptions {
     echoCancellation?: boolean;
     autoGainControl?: boolean;
     noiseSuppression?: boolean;
     channelCount?: number;
 }
-export interface ReactAudioRecorderRefHandler {
+export interface ReactVisualAudioRecorderRefHandler {
     start: () => void;
     stop: () => void;
     pause: () => void;
@@ -105,12 +105,12 @@ export interface ReactAudioRecorderRefHandler {
 }
 export interface UseMicrophoneRecorderParams {
     onStart: ((mediaRecorder: MediaRecorder, audioContext: AudioContext, mediaStream: MediaStream, analyser: AnalyserNode) => void) | void;
-    onChange: ((blobObject: ReactAudioRecorderBlobObject) => void) | void;
+    onChange: ((blobObject: ReactVisualAudioRecorderBlobObject) => void) | void;
     onData: ((blob: Blob) => void) | void;
     options: {
         mimeType: string;
     } & MediaRecorderOptions;
-    soundOptions?: ReactAudioRecorderSoundOptions;
+    soundOptions?: ReactVisualAudioRecorderSoundOptions;
 }
 export type UseMicrophoneRecorderContext = {
     stopRecording: () => void;
