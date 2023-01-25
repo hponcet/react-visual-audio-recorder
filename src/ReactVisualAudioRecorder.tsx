@@ -29,6 +29,7 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
 
     const [record, setRecord] = useState<boolean>(false);
     const [pause, setPause] = useState<boolean>(false);
+    const [audioRecorderStatus, setAudioRecorderStatus] = useState<"pause" | "recording" | "stopped">("stopped");
 
     const visualizerRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -84,18 +85,22 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
     }, [record, visualizerRef.current, mediaRecorderApi, width, height, backgroundColor, strokeColor]);
 
     useEffect(() => {
-      if (handleStatus) handleStatus(pause && record ? "pause" : !pause && record ? "recording" : "stopped");
+      const status = pause && record ? "pause" : !pause && record ? "recording" : "stopped";
+      if (handleStatus) handleStatus(status);
+      setAudioRecorderStatus(status);
     }, [pause, record]);
 
     function startRecording() {
-      onStartRecording().then(() => {
-        setRecord(true);
-      });
+      if (audioRecorderStatus === "stopped") onStartRecording();
+      else if (audioRecorderStatus === "pause") onResumeRecording();
+      setPause(false);
+      setRecord(true);
     }
 
     function stopRecording() {
+      if (["recording", "pause"].indexOf(audioRecorderStatus) !== -1) onStopRecording();
       setRecord(false);
-      onStopRecording();
+      setPause(false);
     }
 
     function resetRecording() {
@@ -110,8 +115,10 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
     }
 
     function resumeRecording() {
+      if (audioRecorderStatus === "stopped") onStartRecording();
+      else if (audioRecorderStatus === "pause") onResumeRecording();
+      setRecord(true);
       setPause(false);
-      onResumeRecording();
     }
 
     useImperativeHandle(

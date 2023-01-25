@@ -80,6 +80,10 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
         if (onStart) onStart(mediaRecorderInstance, audioCtx, mediaStream, analyser);
       });
 
+      mediaRecorderInstance.addEventListener("error", (event) => {
+        console.error("ReactVisualAudioRecorder", event);
+      });
+
       audioCtx.resume().then(() => {
         const sourceNode = audioCtx.createMediaStreamSource(mediaStream);
         sourceNode.connect(analyser);
@@ -193,7 +197,9 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
   }
 
   function startRecording(): Promise<void> {
-    return mediaRecorderApi.then((api) => api.mediaRecorder.start(10));
+    return mediaRecorderApi.then((api) => {
+      api.mediaRecorder.start(10);
+    });
   }
 
   useEffect(() => {
