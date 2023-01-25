@@ -46,7 +46,7 @@ export interface ReactVisualAudioRecorderProps {
    * @param status
    * @returns
    */
-  handleStatus: (status: "pause" | "recording" | "stopped") => void;
+  handleStatus?: (status: "pause" | "recording" | "stopped") => void;
 
   /**
    * Quality of the recording in bytes/second.
@@ -119,7 +119,7 @@ export interface ReactVisualAudioRecorderProps {
   className?: string;
 
   /** Refs to the component function */
-  ref: ForwardedRef<ReactVisualAudioRecorderRefHandler>;
+  ref?: ForwardedRef<ReactVisualAudioRecorderRefHandler>;
 }
 
 export interface ReactVisualAudioRecorderBlobObject {
