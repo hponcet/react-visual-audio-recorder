@@ -21,6 +21,7 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
       echoCancellation = true,
       autoGainControl = true,
       noiseSuppression = true,
+      showOnlyOnRecord,
       channelCount = 2,
       backgroundColor = "rgba(255, 255, 255, 0.5)",
       strokeColor = "#000000",
@@ -98,7 +99,7 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
     }
 
     function stopRecording() {
-      if (["recording", "pause"].indexOf(audioRecorderStatus) !== -1) onStopRecording();
+      onStopRecording();
       setRecord(false);
       setPause(false);
     }
@@ -134,6 +135,8 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
       }),
       [record]
     );
+
+    if (showOnlyOnRecord && audioRecorderStatus !== "recording") return null;
 
     return <canvas ref={visualizerRef} height={height} width={width} className={className} />;
   }

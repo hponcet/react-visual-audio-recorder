@@ -49,6 +49,12 @@ export interface ReactVisualAudioRecorderProps {
   handleStatus?: (status: "pause" | "recording" | "stopped") => void;
 
   /**
+   * Show visualisation only if microphone is recording.
+   * @default false
+   */
+  showOnlyOnRecord?: boolean;
+
+  /**
    * Quality of the recording in bytes/second.
    * @default 128000
    */
