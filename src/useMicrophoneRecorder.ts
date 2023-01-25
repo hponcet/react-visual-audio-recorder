@@ -41,10 +41,6 @@ function olderNavigatorCompat() {
 export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseMicrophoneRecorderContext {
   const { onStart, onStop: _onStop, onChange, onData, options, soundOptions } = params;
 
-  const [mediaStream, setMediaStream] = useState<MediaStream | void>();
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | void>();
-  const [audioContext, setAudioContext] = useState<AudioContext | void>();
-  const [audioContextAnalyser, setAudioContextAnalyser] = useState<AnalyserNode | void>();
   const [startTime, setStartTime] = useState<number | void>();
 
   const chunks = useRef<Blob[]>([]);
@@ -62,6 +58,45 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
     }),
     [soundOptions]
   );
+
+  const mediaRecorderApi = useMemo(async () => {
+    if (navigator.mediaDevices) {
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      let mediaRecorderInstance: MediaRecorder;
+
+      if (options.mimeType && MediaRecorder.isTypeSupported(options.mimeType)) {
+        mediaRecorderInstance = new MediaRecorder(mediaStream, options);
+      } else {
+        mediaRecorderInstance = new MediaRecorder(mediaStream, { ...options, mimeType: "" });
+      }
+
+      mediaRecorderInstance.addEventListener("dataavailable", onHandleChunks);
+
+      const audioCtx = createAudioContextCompat();
+      const analyser = audioCtx.createAnalyser();
+
+      mediaRecorderInstance.addEventListener("start", () => {
+        if (onStart) onStart(mediaRecorderInstance, audioCtx, mediaStream, analyser);
+      });
+
+      audioCtx.resume().then(() => {
+        const sourceNode = audioCtx.createMediaStreamSource(mediaStream);
+        sourceNode.connect(analyser);
+      });
+
+      setStartTime(Date.now());
+
+      return {
+        mediaRecorder: mediaRecorderInstance,
+        audioContext: audioCtx,
+        analyser,
+        mediaStream,
+      };
+    } else {
+      throw new Error("Your browser does not support audio recording");
+    }
+  }, []);
 
   function onHandleChunks(event: BlobEvent) {
     chunks.current.push(event.data);
@@ -120,35 +155,36 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
 
   function stopRecording() {
     onStop();
-    if (mediaRecorder) {
-      if (mediaRecorder.state !== "inactive") mediaRecorder.stop();
-      setMediaRecorder();
-    }
-    if (mediaStream) {
-      mediaStream.getAudioTracks().forEach((track) => {
-        track.stop();
-      });
-      setMediaStream();
-    }
-    if (audioContext) {
-      audioContext.close();
-      setAudioContext();
-    }
-    if (audioContextAnalyser) {
-      setAudioContextAnalyser();
-    }
-    setStartTime();
+    mediaRecorderApi.then(({ mediaRecorder, mediaStream, audioContext }) => {
+      if (mediaRecorder) {
+        if (mediaRecorder.state !== "inactive") mediaRecorder.stop();
+      }
+      if (mediaStream) {
+        mediaStream.getAudioTracks().forEach((track) => {
+          track.stop();
+        });
+      }
+      if (audioContext) {
+        audioContext.close();
+      }
+
+      setStartTime();
+    });
   }
 
   function pauseRecording() {
-    onPause();
-    audioContext?.suspend();
-    mediaRecorder?.pause();
+    mediaRecorderApi.then(({ audioContext, mediaRecorder }) => {
+      onPause();
+      audioContext?.suspend();
+      mediaRecorder?.pause();
+    });
   }
 
   function resumeRecording() {
-    audioContext?.resume();
-    mediaRecorder?.resume();
+    mediaRecorderApi.then(({ audioContext, mediaRecorder }) => {
+      audioContext?.resume();
+      mediaRecorder?.resume();
+    });
   }
 
   function resetRecording() {
@@ -156,55 +192,13 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
     stopRecording();
   }
 
-  async function startRecording(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (navigator.mediaDevices) {
-        navigator.mediaDevices.getUserMedia(constraints).then((mediaStream) => {
-          setMediaStream(mediaStream);
-
-          let mediaRecorderInstance: MediaRecorder;
-
-          if (options.mimeType && MediaRecorder.isTypeSupported(options.mimeType)) {
-            mediaRecorderInstance = new MediaRecorder(mediaStream, options);
-          } else {
-            mediaRecorderInstance = new MediaRecorder(mediaStream, { ...options, mimeType: "" });
-          }
-
-          mediaRecorderInstance.addEventListener("dataavailable", onHandleChunks);
-
-          const audioCtx = createAudioContextCompat();
-
-          audioCtx.resume().then(() => {
-            const analyser = audioCtx.createAnalyser();
-            if (mediaRecorderInstance.state !== "recording") {
-              mediaRecorderInstance.start(10);
-            }
-            const sourceNode = audioCtx.createMediaStreamSource(mediaStream);
-            sourceNode.connect(analyser);
-
-            setStartTime(Date.now());
-            setMediaRecorder(mediaRecorderInstance);
-            setAudioContext(audioCtx);
-            setAudioContextAnalyser(analyser);
-            setMediaStream(mediaStream);
-            if (onStart) onStart(mediaRecorderInstance, audioCtx, mediaStream, analyser);
-            resolve();
-          });
-        });
-      } else {
-        reject(new Error("Your browser does not support audio recording"));
-      }
-    });
+  function startRecording(): Promise<void> {
+    return mediaRecorderApi.then((api) => api.mediaRecorder.start(10));
   }
 
   useEffect(() => {
     olderNavigatorCompat();
   }, []);
-
-  useEffect(() => {
-    if (startTime) {
-    }
-  }, [constraints, onData, onStart, options, startTime]);
 
   return {
     stopRecording,
@@ -212,7 +206,6 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
     resumeRecording,
     resetRecording,
     startRecording,
-    audioContext,
-    audioContextAnalyser,
+    mediaRecorderApi,
   };
 }

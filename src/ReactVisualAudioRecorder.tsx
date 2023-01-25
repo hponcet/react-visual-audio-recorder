@@ -45,7 +45,7 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
       resumeRecording: onResumeRecording,
       resetRecording: onResetRecording,
       startRecording: onStartRecording,
-      audioContextAnalyser,
+      mediaRecorderApi,
     } = useMicrophoneRecorder({
       onStart,
       onStop,
@@ -65,21 +65,23 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
 
     useEffect(() => {
       let animationFrame: number = -1;
+      mediaRecorderApi.then((api) => {
+        if (record && visualizerRef.current)
+          animationFrame = Visualizer(
+            visualizerRef.current.getContext("2d"),
+            visualizerRef.current,
+            api.analyser,
+            width,
+            height,
+            backgroundColor,
+            strokeColor
+          );
+      });
 
-      if (record && visualizerRef.current && audioContextAnalyser)
-        animationFrame = Visualizer(
-          visualizerRef.current.getContext("2d"),
-          visualizerRef.current,
-          audioContextAnalyser,
-          width,
-          height,
-          backgroundColor,
-          strokeColor
-        );
       return () => {
         if (animationFrame > -1) cancelAnimationFrame(animationFrame);
       };
-    }, [record, visualizerRef.current, audioContextAnalyser, width, height, backgroundColor, strokeColor]);
+    }, [record, visualizerRef.current, mediaRecorderApi, width, height, backgroundColor, strokeColor]);
 
     useEffect(() => {
       if (handleStatus) handleStatus(pause && record ? "pause" : !pause && record ? "recording" : "stopped");
@@ -121,6 +123,7 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
         pause: pauseRecording,
         resume: resumeRecording,
         getFileExtension: () => ext,
+        mediaRecorderApi,
       }),
       [record]
     );

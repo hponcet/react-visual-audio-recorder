@@ -144,6 +144,12 @@ export interface ReactVisualAudioRecorderRefHandler {
   resume: () => void;
   reset: () => void;
   getFileExtension: () => string | void;
+  mediaRecorderApi: Promise<{
+    mediaRecorder: MediaRecorder;
+    audioContext: AudioContext;
+    analyser: AnalyserNode;
+    mediaStream: MediaStream;
+  }>;
 }
 
 export interface UseMicrophoneRecorderParams {
@@ -168,6 +174,10 @@ export type UseMicrophoneRecorderContext = {
   resumeRecording: () => void;
   resetRecording: () => void;
   startRecording: () => Promise<void>;
-  audioContext: AudioContext | void;
-  audioContextAnalyser: AnalyserNode | void;
+  mediaRecorderApi: Promise<{
+    mediaRecorder: MediaRecorder;
+    audioContext: AudioContext;
+    analyser: AnalyserNode;
+    mediaStream: MediaStream;
+  }>;
 };
