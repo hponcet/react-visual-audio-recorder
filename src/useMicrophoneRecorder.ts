@@ -42,10 +42,11 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
   const { onStart, onStop: _onStop, onChange, onData, options, soundOptions } = params;
 
   const [startTime, setStartTime] = useState<number | void>();
+  const [resetApi, setResetApi] = useState<number>(Date.now());
 
   const chunks = useRef<Blob[]>([]);
 
-  let constraints = useMemo(
+  const constraints = useMemo(
     () => ({
       audio: {
         echoCancellation: true,
@@ -59,6 +60,11 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
     [soundOptions]
   );
 
+  function onHandleChunks(event: BlobEvent) {
+    chunks.current.push(event.data);
+    if (onData) onData(event.data);
+  }
+
   const mediaRecorderApi = useMemo(async () => {
     if (navigator.mediaDevices) {
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -68,7 +74,10 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
       if (options.mimeType && MediaRecorder.isTypeSupported(options.mimeType)) {
         mediaRecorderInstance = new MediaRecorder(mediaStream, options);
       } else {
-        mediaRecorderInstance = new MediaRecorder(mediaStream, { ...options, mimeType: "" });
+        mediaRecorderInstance = new MediaRecorder(mediaStream, {
+          ...options,
+          mimeType: "",
+        });
       }
 
       mediaRecorderInstance.addEventListener("dataavailable", onHandleChunks);
@@ -81,7 +90,7 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
       });
 
       mediaRecorderInstance.addEventListener("error", (event) => {
-        console.error("ReactVisualAudioRecorder", event);
+        console.dir("ReactVisualAudioRecorder", event);
       });
 
       audioCtx.resume().then(() => {
@@ -97,15 +106,9 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
         analyser,
         mediaStream,
       };
-    } else {
-      throw new Error("Your browser does not support audio recording");
     }
-  }, []);
-
-  function onHandleChunks(event: BlobEvent) {
-    chunks.current.push(event.data);
-    if (onData) onData(event.data);
-  }
+    throw new Error("Your browser does not support audio recording");
+  }, [resetApi]);
 
   function onPause() {
     if (startTime) {
@@ -115,7 +118,7 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
         blob,
         startTime,
         stopTime: Date.now(),
-        options: options,
+        options,
         blobURL: window.URL.createObjectURL(blob),
       };
 
@@ -131,7 +134,7 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
         blob: null,
         startTime,
         stopTime: Date.now(),
-        options: options,
+        options,
         blobURL: null,
       };
 
@@ -148,12 +151,13 @@ export function useMicrophoneRecorder(params: UseMicrophoneRecorderParams): UseM
         blob,
         startTime,
         stopTime: Date.now(),
-        options: options,
+        options,
         blobURL: window.URL.createObjectURL(blob),
       };
 
       if (onChange) onChange(blobObject);
       if (_onStop) _onStop(blobObject);
+      setResetApi(Date.now());
     }
   }
 

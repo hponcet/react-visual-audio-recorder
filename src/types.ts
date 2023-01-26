@@ -49,6 +49,12 @@ export interface ReactVisualAudioRecorderProps {
   handleStatus?: (status: "pause" | "recording" | "stopped") => void;
 
   /**
+   * Show visualisation canvas.
+   * @default false
+   */
+  noVisualisation?: boolean;
+
+  /**
    * Show visualisation only if microphone is recording.
    * @default false
    */

@@ -22,14 +22,13 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
       autoGainControl = true,
       noiseSuppression = true,
       showOnlyOnRecord,
+      noVisualisation,
       channelCount = 2,
       backgroundColor = "rgba(255, 255, 255, 0.5)",
       strokeColor = "#000000",
       className = "visualizer",
     } = props;
 
-    const [record, setRecord] = useState<boolean>(false);
-    const [pause, setPause] = useState<boolean>(false);
     const [audioRecorderStatus, setAudioRecorderStatus] = useState<"pause" | "recording" | "stopped">("stopped");
 
     const visualizerRef = useRef<HTMLCanvasElement | null>(null);
@@ -66,60 +65,72 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
     });
 
     useEffect(() => {
-      let animationFrame: number = -1;
-      mediaRecorderApi.then((api) => {
-        if (record && visualizerRef.current)
-          animationFrame = Visualizer(
-            visualizerRef.current.getContext("2d"),
-            visualizerRef.current,
-            api.analyser,
-            width,
-            height,
-            backgroundColor,
-            strokeColor
-          );
-      });
+      if (!noVisualisation) {
+        let animationFrame: number = -1;
+        mediaRecorderApi.then((api) => {
+          if (visualizerRef.current) {
+            const canvasCtx = visualizerRef.current.getContext("2d");
 
-      return () => {
-        if (animationFrame > -1) cancelAnimationFrame(animationFrame);
-      };
-    }, [record, visualizerRef.current, mediaRecorderApi, width, height, backgroundColor, strokeColor]);
+            if (audioRecorderStatus === "recording") {
+              animationFrame = Visualizer(
+                canvasCtx,
+                visualizerRef.current,
+                api.analyser,
+                width,
+                height,
+                backgroundColor,
+                strokeColor
+              );
+            } else {
+              canvasCtx?.clearRect(0, 0, width, height);
+            }
+          }
+        });
+
+        return () => {
+          if (animationFrame > -1) cancelAnimationFrame(animationFrame);
+        };
+      }
+    }, [
+      audioRecorderStatus,
+      visualizerRef.current,
+      mediaRecorderApi,
+      width,
+      height,
+      backgroundColor,
+      strokeColor,
+      noVisualisation,
+    ]);
 
     useEffect(() => {
-      const status = pause && record ? "pause" : !pause && record ? "recording" : "stopped";
-      if (handleStatus) handleStatus(status);
-      setAudioRecorderStatus(status);
-    }, [pause, record]);
+      if (handleStatus) handleStatus(audioRecorderStatus);
+    }, [audioRecorderStatus]);
 
     function startRecording() {
       if (audioRecorderStatus === "stopped") onStartRecording();
       else if (audioRecorderStatus === "pause") onResumeRecording();
-      setPause(false);
-      setRecord(true);
+      setAudioRecorderStatus("recording");
     }
 
     function stopRecording() {
       onStopRecording();
-      setRecord(false);
-      setPause(false);
+      setAudioRecorderStatus("stopped");
     }
 
     function resetRecording() {
-      setRecord(false);
-      setPause(false);
       onResetRecording();
+      setAudioRecorderStatus("stopped");
     }
 
     function pauseRecording() {
-      setPause(true);
       onPauseRecording();
+      setAudioRecorderStatus("pause");
     }
 
     function resumeRecording() {
       if (audioRecorderStatus === "stopped") onStartRecording();
       else if (audioRecorderStatus === "pause") onResumeRecording();
-      setRecord(true);
-      setPause(false);
+      setAudioRecorderStatus("recording");
     }
 
     useImperativeHandle(
@@ -133,10 +144,10 @@ const ReactVisualAudioRecorder = forwardRef<ReactVisualAudioRecorderRefHandler, 
         getFileExtension: () => ext,
         mediaRecorderApi,
       }),
-      [record]
+      [audioRecorderStatus, ext]
     );
 
-    if (showOnlyOnRecord && audioRecorderStatus !== "recording") return null;
+    if (noVisualisation || (showOnlyOnRecord && audioRecorderStatus !== "recording")) return null;
 
     return <canvas ref={visualizerRef} height={height} width={width} className={className} />;
   }
