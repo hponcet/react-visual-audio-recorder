@@ -73,8 +73,8 @@ export default function App() {
   }
 
   function onChange(blobObject: ReactVisualAudioRecorderBlobObject) {
-    if (!blobObject) return;
-    setUrl(blobObject.blobURL);
+    if (!blobObject.blob) return;
+    setUrl(URL.createObjectURL(blobObject.blob));
   }
 
   function reset() {
