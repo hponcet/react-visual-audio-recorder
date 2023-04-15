@@ -51,7 +51,7 @@ None of the props are required
 
 ```typescript
 import React, { useRef, useState } from "react";
-import ReactVisualAudioRecorder from "react-visual-audio-recorder";
+import { ReactVisualAudioRecorder } from "react-visual-audio-recorder";
 import type {
   ReactVisualAudioRecorderRefHandler,
   ReactVisualAudioRecorderBlobObject,
